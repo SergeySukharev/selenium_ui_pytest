@@ -16,6 +16,18 @@ class OpenCartLocators:
     LOCATOR_OPENCART_CART_BUTTON_2 = (By.CSS_SELECTOR, "fa fa-shopping-cart")
     LOCATOR_OPENCART_CART_TOTAL = (By.CSS_SELECTOR, "#content > div.row > div > table > tbody > tr:nth-child(4) > td:nth-child(2)")
     LOCATOR_OPENCART_CART_BACK_TO_MAIN_BUTTON = (By.CLASS_NAME, "btn btn-default")
+    LOCATOR_OPENCART_PRODUCT_CARD_H1 = (By.XPATH, '//*[@id="content"]/div/div[2]/h1')
+    LOCATOR_OPENCART_PRODUCT_CARD_ADD_TO_CART_BUTTON = (By.CSS_SELECTOR, "#button-cart")
+    LOCATOR_OPENCART_PRODUCT_CARD_ADD_TO_CART_ALERT = (By.XPATH, '//*[@id="product-product"]/div[1]')
+    LOCATOR_OPENCART_USER_REGESTRATION_FIRST_NAME = (By.ID, "input-firstname")
+    LOCATOR_OPENCART_USER_REGESTRATION_LAST_NAME =(By.ID, 'input-lastname')
+    LOCATOR_OPENCART_USER_REGESTRATION_EMAIL = (By.ID, 'input-email')
+    LOCATOR_OPENCART_USER_REGESTRATION_PHONE = (By.ID, 'input-telephone')
+    LOCATOR_OPENCART_USER_REGESTRATION_PASSWORD = (By.ID, 'input-password')
+    LOCATOR_OPENCART_USER_REGESTRATION_PASSWORD_CONFIRM = (By.ID, 'input-confirm')
+    LOCATOR_OPENCART_USER_REGESTRATION_PRIVACY_CHECKBOX = (By.CSS_SELECTOR, '#content > form > div > div > input[type=checkbox]:nth-child(2)')
+    LOCATOR_OPENCART_USER_REGESTRATION_SUBMIT_BUTTON = (By.CSS_SELECTOR, '#content > form > div > div > input.btn.btn-primary')
+
 
 class Search(BasePage):
 
@@ -72,6 +84,59 @@ class AddToCart(BasePage):
 
     def click_on_back_to_main_button(self):
         self.find_element(OpenCartLocators.LOCATOR_OPENCART_CART_BACK_TO_MAIN_BUTTON, time=2).click()
+
+
+class ProductCard(BasePage):
+
+    def __init__(self, driver, base_url, page_url):
+        super().__init__(driver, base_url)
+        self.driver = driver
+        self.base_url = base_url
+        self.page_url = page_url
+
+    def go_to_site(self):
+        return self.driver.get(f"{self.base_url}/{self.page_url}")
+
+    @property
+    def find_product_name(self):
+        return self.find_element(OpenCartLocators.LOCATOR_OPENCART_PRODUCT_CARD_H1, time=2)
+
+    def click_on_add_to_cart_button(self):
+        return self.find_element(OpenCartLocators.LOCATOR_OPENCART_PRODUCT_CARD_ADD_TO_CART_BUTTON, time=2).click()
+
+    def add_to_cart_alert(self):
+        return self.find_element(OpenCartLocators.LOCATOR_OPENCART_PRODUCT_CARD_ADD_TO_CART_ALERT)
+
+
+class UserRegistrationForm(BasePage):
+
+    def go_to_site(self):
+        return self.driver.get(f'{self.base_url}/index.php?route=account/register')
+
+    def send_registration_data(self, first_name, last_name, password, email, phone):
+        login_1 = self.find_element(OpenCartLocators.LOCATOR_OPENCART_USER_REGESTRATION_FIRST_NAME)
+        login_1.send_keys(first_name)
+        login_2 = self.find_element(OpenCartLocators.LOCATOR_OPENCART_USER_REGESTRATION_LAST_NAME)
+        login_2.send_keys(last_name)
+        telepohone = self.find_element(OpenCartLocators.LOCATOR_OPENCART_USER_REGESTRATION_PHONE)
+        telepohone.send_keys(phone)
+        e_mail = self.find_element(OpenCartLocators.LOCATOR_OPENCART_USER_REGESTRATION_EMAIL)
+        e_mail.send_keys(email)
+        secret = self.find_element(OpenCartLocators.LOCATOR_OPENCART_USER_REGESTRATION_PASSWORD)
+        secret.send_keys(password)
+        confirm = self.find_element(OpenCartLocators.LOCATOR_OPENCART_USER_REGESTRATION_PASSWORD_CONFIRM)
+        confirm.send_keys(password)
+
+    def submit_check(self):
+        checkbox = self.find_element(OpenCartLocators.LOCATOR_OPENCART_USER_REGESTRATION_PRIVACY_CHECKBOX)
+        checkbox.click()
+
+    def submit_button(self):
+        button = self.find_element(OpenCartLocators.LOCATOR_OPENCART_USER_REGESTRATION_SUBMIT_BUTTON)
+        button.click()
+
+
+
 
 
 
