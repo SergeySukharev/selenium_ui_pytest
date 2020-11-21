@@ -2,7 +2,6 @@ import pytest
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
 
-
 PATH_TO_CHROME = 'drivers/chromedriver.exe'
 PATH_TO_FIREFOX = 'drivers/geckodriver.exe'
 PATH_TO_IE = 'drivers/IEDriverServer.exe'
@@ -51,5 +50,3 @@ def driver_factory(browser):
         options.add_argument("--headless")
         driver = webdriver.Ie(executable_path=PATH_TO_IE, options=options)
     return driver
-
-
