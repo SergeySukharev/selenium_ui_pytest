@@ -22,3 +22,9 @@ class BasePage:
 
     def go_to_site(self):
         return self.driver.get(self.base_url)
+
+    @staticmethod
+    def send_data(obj, keys):
+        obj.click()
+        obj.clear()
+        obj.send_keys(keys)

@@ -1,4 +1,8 @@
-from Opencart import Search, AdminLoginLogout, AddToCart, ProductCard, UserRegistrationForm
+from Search import Search
+from AdminLoginLogout import AdminLoginLogout
+from AddToCart import AddToCart
+from ProductCard import ProductCard
+from UserRegistrationForm import UserRegistrationForm
 import pytest
 
 
@@ -13,34 +17,33 @@ def test_opencart_search(browser, base_url, value):
         assert value in elem.text
 
 
-def test_admin_login(browser, base_url):
+@pytest.mark.parametrize('admin_login, admin_password', [('admin', 'admin')])
+def test_admin_login(browser, base_url, admin_login, admin_password):
     opencart_admin_page = AdminLoginLogout(browser, base_url)
     opencart_admin_page.go_to_site()
-    opencart_admin_page.login()
+    opencart_admin_page.login(admin_login, admin_password)
     assert opencart_admin_page.title == 'Dashboard'
     opencart_admin_page.logout()
     assert opencart_admin_page.title == 'Administration'
 
 
-def test_add_to_cart(browser,base_url):
+def test_add_to_cart(browser, base_url):
     opencart_main_page = AddToCart(browser, base_url)
     opencart_main_page.go_to_site()
     opencart_main_page.click_on_add_to_cart_button()
-    #opencart_main_page.check_alert()
     opencart_main_page.click_on_cart_button()
     assert opencart_main_page.title == "Shopping Cart"
-    assert opencart_main_page.find_total == "£454.10"
     opencart_main_page.click_on_back_to_main_button()
     assert opencart_main_page.title == "Your Store"
 
 
-PRODUCT_CARTS_URLS = {
+PRODUCT_CARDS_URLS = {
     "MacBook": "index.php?route=product/product&product_id=43",
     "Iphone": "index.php?route=product/product&product_id=40"
 }
 
 
-@pytest.mark.parametrize("urls", list(PRODUCT_CARTS_URLS.values()))
+@pytest.mark.parametrize("urls", list(PRODUCT_CARDS_URLS.values()))
 def test_product_card(browser, base_url, urls):
     product_card_page = ProductCard(browser, base_url, urls)
     product_card_page.go_to_site()
@@ -68,4 +71,3 @@ def test_user_registration(browser, base_url, users):
                                                   users["e_mail"], users["phone"])
     user_registration_page.submit_check()
     user_registration_page.submit_button()
-
