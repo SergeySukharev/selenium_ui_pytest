@@ -33,27 +33,27 @@ def browser(request):
     driver = driver_factory(request.config.getoption("--browser"))
     driver.maximize_window()
 
-    def collect_logs(browser):
+    def collect_logs_and_close():
         # Логиирование производительности страницы
         with open("logs/performance.log", "w+") as f:
-            for line in browser.get_log("performance"):
+            for line in driver.get_log("performance"):
                 f.write(str(line))
                 f.write("\n")
 
         # Логи консоли браузера собирает WARNINGS, ERRORS
         with open("logs/browser.log", "w+") as f:
-            for line in browser.get_log("browser"):
+            for line in driver.get_log("browser"):
                 f.write(str(line))
                 f.write("\n")
 
         # Локальное логированеи драйвера
         with open("logs/driver.log", "w+") as f:
-            for line in browser.get_log("driver"):
+            for line in driver.get_log("driver"):
                 f.write(str(line))
                 f.write("\n")
 
-    request.addfinalizer(collect_logs(driver))
-    request.addfinalizer(driver.quit)
+        driver.quit()
+    request.addfinalizer(collect_logs_and_close)
     return driver
 
 
