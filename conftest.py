@@ -1,26 +1,17 @@
 import pytest
 from selenium import webdriver
-from selenium.webdriver.firefox.options import Options
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
-
-PATH_TO_CHROME = 'drivers/chromedriver.exe'
-PATH_TO_FIREFOX = 'drivers/geckodriver.exe'
-PATH_TO_IE = 'drivers/IEDriverServer.exe'
+import time
 
 
 def pytest_addoption(parser):
-    parser.addoption(
-        "--url",
-        action="store",
-        default="https://demo.opencart.com",
-        help="Request base url"
-    )
-    parser.addoption(
-        "--browser",
-        action="store",
-        default='chrome',
-        help="Browser to use"
-    )
+    parser.addoption("--url", action="store", default="https://demo.opencart.com", help="Request base url")
+    parser.addoption("--browser", action="store", default='chrome', help="Browser to use")
+    parser.addoption("--bversion", action="store", required=True)
+    parser.addoption("--vnc", action="store_true", default=False)
+    parser.addoption("--logs", action="store_true", default=False)
+    parser.addoption("--videos", action="store_true", default=False)
+    parser.addoption("--executor", action="store", default="localhost")
+    parser.addoption("--mobile", action="store_true")
 
 
 @pytest.fixture(scope="module")
@@ -30,47 +21,47 @@ def base_url(request):
 
 @pytest.fixture
 def browser(request):
-    driver = driver_factory(request.config.getoption("--browser"))
-    driver.maximize_window()
+    browser = request.config.getoption("--browser")
+    version = request.config.getoption("--bversion")
+    executor = request.config.getoption("--executor")
+    vnc = request.config.getoption("--vnc")
+    logs = request.config.getoption("--logs")
+    videos = request.config.getoption("--videos")
+    executor_url = f"http://{executor}:4444/wd/hub"
+    mobile = request.config.getoption("--mobile")
 
-    def collect_logs_and_close():
-        # Логиирование производительности страницы
-        with open("logs/performance.log", "w+") as f:
-            for line in driver.get_log("performance"):
-                f.write(str(line))
-                f.write("\n")
+    caps = {
+        "browserName": browser,
+        "browserVersion": version,
+        "screenResolution": "1280x720",
+        "name": "Mikhail.C",
+        "selenoid:options": {
+            "enableVNC": vnc,
+            "enableVideo": videos,
+            "enableLog": logs,
+        },
+        'acceptSslCerts': True,
+        'acceptInsecureCerts': True,
+        'timeZone': 'Europe/Moscow',
+        'goog:chromeOptions': {
+            'args': []
+        }
+    }
 
-        # Логи консоли браузера собирает WARNINGS, ERRORS
-        with open("logs/browser.log", "w+") as f:
-            for line in driver.get_log("browser"):
-                f.write(str(line))
-                f.write("\n")
+    if browser == "chrome" and mobile:
+        caps["goog:chromeOptions"]["mobileEmulation"] = {"deviceName": "iPhone 5/SE"}
 
-        # Локальное логированеи драйвера
-        with open("logs/driver.log", "w+") as f:
-            for line in driver.get_log("driver"):
-                f.write(str(line))
-                f.write("\n")
+    driver = webdriver.Remote(
+        command_executor=executor_url,
+        desired_capabilities=caps
+    )
 
+    if not mobile:
+        driver.maximize_window()
+
+    def fin():
+        time.sleep(1)
         driver.quit()
-    request.addfinalizer(collect_logs_and_close)
-    return driver
 
-
-def driver_factory(browser):
-    if browser == 'chrome':
-        caps = DesiredCapabilities.CHROME
-        options = webdriver.ChromeOptions()
-        options.add_argument("headless")
-        options.add_experimental_option('w3c', False)
-        caps['loggingPrefs'] = {'performance': 'ALL', 'browser': 'ALL'}
-        driver = webdriver.Chrome(PATH_TO_CHROME, options=options, desired_capabilities=caps)
-    elif browser == 'firefox':
-        options = Options()
-        options.add_argument("--headless")
-        driver = webdriver.Firefox(executable_path=PATH_TO_FIREFOX, options=options)
-    elif browser == 'ie':
-        options = Options()
-        options.add_argument("--headless")
-        driver = webdriver.Ie(executable_path=PATH_TO_IE, options=options)
+    request.addfinalizer(fin)
     return driver
