@@ -34,7 +34,7 @@ def browser(request):
         "browserName": browser,
         "browserVersion": version,
         "screenResolution": "1280x720",
-        "name": "Mikhail.C",
+        "name": "Sergey.S",
         "selenoid:options": {
             "enableVNC": vnc,
             "enableVideo": videos,
